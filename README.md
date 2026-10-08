@@ -46,9 +46,91 @@ Diseñar, implementar y auditar una infraestructura de red segura con microsegme
   * **Anti-Leak DMZ -> LAN:** Política con acción `DENY` y log activado para todo tráfico originado en la DMZ con destino hacia las VLANs de usuarios y gestión.
   * **Salida Restringida de DMZ a Internet:** Políticas que permiten exclusivamente consultas DNS salientes hacia `8.8.8.8` y tráfico HTTP/HTTPS hacia los repositorios oficiales de Ubuntu (`archive.ubuntu.com`, `security.ubuntu.com`). El resto de Internet y tráfico ICMP se encuentra bloqueado con registro en log.
 
+### 3.3. Inventario de Objetos y Elementos Creados en FortiGate (GUI)
+
+Esta sección consolida todos los elementos lógicos, grupos de red, perfiles UTM y parámetros del sistema configurados dentro de la interfaz gráfica del FortiGate para dar soporte a la topología y cumplir las políticas de seguridad.
+
 ---
 
-## 4. Evidencias de Cumplimiento
+#### A. Interfaces Físicas y Subinterfaces 802.1Q (`Network > Interfaces`)
+
+![INTER](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/Network.png)
+
+---
+
+#### B. Servidores DHCP Locales (`Network > Interfaces > Subinterfaz`)
+
+* **DHCP VLAN 10 (`VLAN10_Users`):**
+  * **Rango:** `10.25.68.10` – `10.25.68.120`
+  * **Gateway:** `10.25.68.1`
+  * **DNS:** System DNS (`8.8.8.8`, `1.1.1.1`)
+* **DHCP VLAN 20 (`VLAN20_Admin`):**
+  * **Rango:** `10.25.68.140` – `10.25.68.250`
+  * **Gateway:** `10.25.68.129`
+  * **DNS:** System DNS (`8.8.8.8`, `1.1.1.1`)
+
+---
+
+#### C. Objetos de Red y Nombres de Dominio (`Policy & Objects > Addresses`)
+
+| Nombre del Objeto | Tipo | Valor / Subred / Dominio | Propósito en la Topología |
+| :--- | :---: | :--- | :--- |
+| **`SRV_Web_Caja`** | Subnet | `10.25.89.2 / 255.255.255.255` | Servidor Web del Sistema de Caja. |
+| **`SRV_Web_Inventario`** | Subnet | `10.25.89.3 / 255.255.255.255` | Servidor Web del Sistema de Inventario. |
+| **`SRV_DB`** | Subnet | `10.25.89.4 / 255.255.255.255` | Servidor de Base de Datos. |
+| **`NET_VLAN10`** | Subnet | `10.25.68.0 / 255.255.255.128` | Subred de usuarios operativos (VLAN 10). |
+| **`NET_VLAN20`** | Subnet | `10.25.68.128 / 255.255.255.128` | Subred de gestión TI (VLAN 20). |
+| **`FQDN_Ubuntu_Archive`** | FQDN | `archive.ubuntu.com` | Repositorio oficial de paquetes Ubuntu. |
+| **`FQDN_Ubuntu_Security`** | FQDN | `security.ubuntu.com` | Repositorio de actualizaciones de seguridad. |
+| **`NET_Ubuntu_Repo_1`** | Subnet | `91.189.88.0 / 255.255.248.0` (`/21`) | Segmento IP público oficial Canonical. |
+| **`NET_Ubuntu_Repo_2`** | Subnet | `185.125.188.0 / 255.255.252.0` (`/22`) | Segmento IP público oficial Canonical. |
+
+---
+![Policy](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/POLICY.png)
+
+#### D. Grupos de Direcciones (`Policy & Objects > Addresses`)
+
+* **`GRP_DMZ_Servidores`:**
+  * **Miembros:** `SRV_Web_Caja`, `SRV_Web_Inventario`, `SRV_DB`
+  * **Función:** Agrupar los objetivos de la DMZ para las reglas de acceso SSH, Anti-Leak y Updates.
+* **`GRP_Endpoints_Updates`:**
+  * **Miembros:** `FQDN_Ubuntu_Archive`, `FQDN_Ubuntu_Security`, `NET_Ubuntu_Repo_1`, `NET_Ubuntu_Repo_2`
+  * **Función:** Destino único permitido en la política de salida de la DMZ hacia Internet.
+
+![Policy](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/GRUPOS.png)
+---
+
+#### E. Perfil de Web Filter y Plantilla de Reemplazo (`Security Profiles`)
+
+* **Perfil UTM:** `WF_Bloqueo_Inventario`
+  * **Modo de inspección:** Proxy-based
+  * **Static URL Filter:** Habilitado
+  * **Regla de URL:**
+    * **URL:** `*10.25.89.3*`
+    * **Type:** Wildcard
+    * **Action:** Block
+    * **Status:** Enable
+* **Replacement Message (`System > Replacement Messages`):**
+  * **Objeto:** `URL Block Message`
+  * **Contenido HTML:** Plantilla institucional con encabezado en rojo advirtiendo la violación de política de seguridad al intentar ingresar al Sistema de Inventario desde la VLAN 10.
+
+![Policy](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/POLITICA-BLOQUEO.png)
+---
+
+#### F. Servicios del Sistema y Configuración de Diagnóstico
+
+* **DNS del Firewall (`Network > DNS`):**
+  * Modo **Specify**: `8.8.8.8` (Primario) y `1.1.1.1` (Secundario).
+  * Garantiza la resolución adecuada de los objetos FQDN del sistema de repositorios.
+* **Registro de Eventos en Memoria (`Log & Report > Log Settings`):**
+  * **Local Log (Memory):** `Enabled`
+  * **Forward Traffic:** `Enabled`
+  * Permite la visualización de logs en tiempo real para tráfico permitido y denegado en la interfaz web.
+ 
+![Policy](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/DNS.png)
+---
+
+## 5. Evidencias de Cumplimiento
 
 ### Requisito 1: Segmentación, DHCP y Seguridad L2
 Concesión de direcciones por DHCP para usuarios y validación de enlace troncal y seguridad en switch.
@@ -93,3 +175,13 @@ Demostración de descarte de paquetes originados desde el servidor hacia las IPs
 * **Bloqueo General:** Timeout en intentos de navegación a sitios externos (ej. Google) y tráfico ICMP bloqueado.
 ![Bloqueo de Navegación Abierta e Internet](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_internet_blocked.png)
 ![Bloqueo de Navegación Abierta e Internet](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_internet_blocked_log.png)
+
+
+---
+## ⚠️ Declaración de Uso de Inteligencia Artificial
+
+En cumplimiento con las buenas prácticas de integridad académica y transparencia profesional:
+
+* **Herramientas utilizadas:** Modelos de lenguaje e inteligencia artificial generativa asistieron en la formulación de consultas técnicas, estructuración de la documentación y depuración de sintaxis.
+* **Alcance del uso:** La IA se empleó exclusivamente como herramienta de apoyo, consulta y optimización de formato.
+* **Autoría y validación:** El diseño topológico, la implementación en entorno virtualizado, la configuración de los equipos (Cisco IOS y FortiOS), la resolución de problemas de enrutamiento/VPN y la verificación funcional de todos los requerimientos fueron realizados, auditados y demostrados íntegramente por el autor del proyecto.
