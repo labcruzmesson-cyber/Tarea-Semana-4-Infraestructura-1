@@ -15,7 +15,7 @@ Diseñar, implementar y auditar una infraestructura de red segura con microsegme
 
 ## 2. Diagrama de la Topología
 
-![Topología de Red](images/topologia.png)
+![Topología de Red](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/topologia.png)
 
 ### Plan de Direccionamiento IP (Matrícula: 2025-0689)
 | Segmento / Función | Interfaz FortiGate | Subred / CIDR | Máscara | Gateway | Rango Asignado / DHCP |
@@ -53,39 +53,43 @@ Diseñar, implementar y auditar una infraestructura de red segura con microsegme
 ### Requisito 1: Segmentación, DHCP y Seguridad L2
 Concesión de direcciones por DHCP para usuarios y validación de enlace troncal y seguridad en switch.
 
-![Concesiones DHCP en FortiGate](images/dhcp_leases.png)
-![Seguridad y DHCP Snooping en Switch](images/switch_security.png)
+![Concesiones DHCP en FortiGate](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dhcp_leases.png)
+![Seguridad en Switch LAN](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/switch_security_lan.png)
+![Seguridad en Switch SERVER](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/switch_security_server.png)
 
 ---
 
 ### Requisito 2: Acceso a Servicios Web y Bloqueo Notificado (VLAN 10)
 * **Permitido:** Acceso al servidor Web de Caja (`10.25.89.2`).
+![Acceso Permitido a Web Caja](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/vlan10_caja_ok.png)
+![Acceso Permitido a Web Caja](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/vlan10_caja_ok_log.png)
 * **Bloqueado:** Intento de acceso al servidor de Inventario (`10.25.89.3`) desplegando el reemplazo institucional de advertencia.
+![Bloqueo de Inventario con Página de Violación](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/vlan10_inventario_block.png)
+![Bloqueo de Inventario con Página de Violación](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/vlan10_inventario_block_log.png)
 
-![Acceso Permitido a Web Caja](images/vlan10_caja_ok.png)
-![Bloqueo de Inventario con Página de Violación](images/vlan10_inventario_block.png)
 
 ---
 
 ### Requisito 3: Exclusividad de Acceso SSH (VLAN 20)
 * **VLAN 10:** Conexión SSH rechazada/descartada con registro en los logs.
+![Intento SSH Denegado desde VLAN 10](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/ssh_vlan10_denied.png)
+![Intento SSH Denegado desde VLAN 10](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/ssh_vlan10_denied_log.png)
 * **VLAN 20:** Conexión SSH establecida satisfactoriamente contra la DMZ.
-
-![Intento SSH Denegado desde VLAN 10](images/ssh_vlan10_denied.png)
-![Acceso SSH Autorizado desde VLAN 20](images/ssh_vlan20_allowed.png)
-
+![Acceso SSH Autorizado desde VLAN 20](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/ssh_vlan20_allowed..png)
+![Acceso SSH Autorizado desde VLAN 20](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/ssh_vlan20_allowed_log.png)
 ---
 
 ### Requisito 4: Prevención de Fuga de Tráfico (Anti-Leak DMZ -> LAN)
 Demostración de descarte de paquetes originados desde el servidor hacia las IPs de las VLANs de usuarios.
 
-![Log Anti-Leak en FortiGate](images/dmz_anti_leak_log.png)
+![Log Anti-Leak en FortiGate](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_anti_leak_log.png)
 
 ---
 
 ### Requisito 5: Internet en DMZ Solo para Actualizaciones
 * **Actualización:** Descarga operativa desde repositorios de paquetes oficiales.
+![Actualización Exitosa de Repositorios](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_update_allowed.png)
+![Actualización Exitosa de Repositorios](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_update_allowed_log.png)
 * **Bloqueo General:** Timeout en intentos de navegación a sitios externos (ej. Google) y tráfico ICMP bloqueado.
-
-![Actualización Exitosa de Repositorios](images/dmz_update_allowed.png)
-![Bloqueo de Navegación Abierta e Internet](images/dmz_internet_blocked.png)
+![Bloqueo de Navegación Abierta e Internet](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_internet_blocked.png)
+![Bloqueo de Navegación Abierta e Internet](https://github.com/labcruzmesson-cyber/Tarea-Semana-4-Infraestructura-1/blob/main/IMAGES/dmz_internet_blocked_log.png)
