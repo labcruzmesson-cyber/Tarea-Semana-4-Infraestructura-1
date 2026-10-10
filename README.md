@@ -4,7 +4,7 @@
 
 > **Autor:** Manuel Alejandro Cruz Messón  
 > **Matrícula:** 2025-0689  
-> **Enlace del Video:** [Ver Demostración Técnica en YouTube](https://youtu.be/gQA8nqr3RDg)
+> **Enlace del Video:** [https://youtu.be/gQA8nqr3RDg](https://youtu.be/gQA8nqr3RDg)
 
 ---
 
